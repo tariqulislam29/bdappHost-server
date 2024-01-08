@@ -4,7 +4,12 @@ const app = express();
 const port =  5000;
 const routes = require("./Routes/index");
 // middleware
-app.use(cors());
+app.use(
+  cors({
+    credentials: true,
+    origin: true,
+  })
+);
 app.use(express.json());
 
 
