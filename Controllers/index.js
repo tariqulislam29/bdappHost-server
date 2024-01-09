@@ -5,7 +5,9 @@ const {
   postloginCheckdata,
 } = require("../Services");
 const { createResponse } = require("../Utils/responseGenerate");
-
+const bcrypt = require("bcryptjs");
+const {} = require("jsonwebtoken");
+const { createTokens } = require("../middlewares/JWT");
 /*------------- All Post Routes ---------------*/
 
 
@@ -37,20 +39,42 @@ module.exports.postloginCheck = async (req, res, next) => {
       } else {
 
     const result = await postloginCheckdata(data.email);
-console.log(result[0]);
-    // res.json(createResponse(result));
+       
+         const isMatchedPass = await bcrypt.compare(
+           data.password,
+           result[0].password
+        );
+ const token = createTokens(result[0].user_id, result[0].name);
+        res.cookie("token", token, {
+          maxAge: 36000000,
+        });
+        res.cookie("userId", result[0].user_id, {
+          signed: false,
+          httpOnly: false,
+          maxAge: 36000000,
+          path: "/",
+          sameSite: "lax",
+        });
+         res.cookie("token", token, {
+           maxAge: 36000000,
+         });
+        const data1 = {
+          token: token,
+          isMatchedPass: isMatchedPass,
+        };
+    res.json(createResponse(data1));
 
       }
   } catch (err) {
     next(err);
   }
 };
+
 /*------------- All get Routes ---------------*/
 module.exports.getRegistration = async (req, res, next) => {
  
   try {
     const result = await getRegistrationdata();
-    console.log(result);
     res.json(createResponse(result));
 
     
