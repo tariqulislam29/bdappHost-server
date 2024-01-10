@@ -33,7 +33,8 @@ module.exports.postRegistration = async (req, res, next) => {
 module.exports.postloginCheck = async (req, res, next) => {
  
   try {
-      const data = req.body;
+    const data = req.body;
+    
       if (!data.email && !data.password) {
         res.json(createResponse(null, "email and password is required", true));
       } else {
@@ -44,25 +45,35 @@ module.exports.postloginCheck = async (req, res, next) => {
            data.password,
            result[0].password
         );
- const token = createTokens(result[0].user_id, result[0].name);
-        res.cookie("token", token, {
-          maxAge: 36000000,
-        });
-        res.cookie("userId", result[0].user_id, {
-          signed: false,
-          httpOnly: false,
-          maxAge: 36000000,
-          path: "/",
-          sameSite: "lax",
-        });
-         res.cookie("token", token, {
-           maxAge: 36000000,
+ const token = createTokens(result[0].user_id, result[0].email);
+        console.log(result[0].user_id);
+         res.cookie("dsd", "dddd", {
+           maxAge: 3600000,
+           httpOnly: true,
+           signed: true,
          });
+        // res.cookie("testCookie", "TestValue", {
+        //   maxAge: 3600000,
+        //   httpOnly: false,
+        //   sameSite: "none",
+        // });
+
+        // res.cookie("userId", result[0]?.user_id, {
+        //   signed: false,
+        //   httpOnly: false,
+        //   maxAge: 36000000,
+        //   path: "/",
+        //   sameSite: "lax",
+        //   // domain: "http://127.0.0.1:5173/",
+        // });
+        
         const data1 = {
           token: token,
           isMatchedPass: isMatchedPass,
         };
+       
     res.json(createResponse(data1));
+
 
       }
   } catch (err) {
@@ -75,6 +86,7 @@ module.exports.getRegistration = async (req, res, next) => {
  
   try {
     const result = await getRegistrationdata();
+    
     res.json(createResponse(result));
 
     
