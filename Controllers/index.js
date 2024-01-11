@@ -1,9 +1,4 @@
-
-const {
-  postRegistrationdata,
-  getRegistrationdata,
-  postloginCheckdata,
-} = require("../Services");
+const {postRegistrationdata,getRegistrationdata,postloginCheckdata,} = require("../Services");
 const { createResponse } = require("../Utils/responseGenerate");
 const bcrypt = require("bcryptjs");
 const {} = require("jsonwebtoken");
@@ -16,11 +11,7 @@ module.exports.postRegistration = async (req, res, next) => {
   
 
   try {
-    //   const { categoryen } = req.body;
-    //   if (!categoryen) {
-    //     res.json(createResponse(null, "Category name is required", true));
-    //   } else {
-
+   
     const result = await postRegistrationdata(data);
 
     res.json(createResponse(result));
@@ -45,18 +36,23 @@ module.exports.postloginCheck = async (req, res, next) => {
            data.password,
            result[0].password
         );
- const token = createTokens(result[0].user_id, result[0].email);
-        console.log(result[0].user_id);
-         res.cookie("dsd", "dddd", {
-           maxAge: 3600000,
-           httpOnly: true,
-           signed: true,
-         });
-        // res.cookie("testCookie", "TestValue", {
-        //   maxAge: 3600000,
-        //   httpOnly: false,
-        //   sameSite: "none",
-        // });
+        const token = createTokens(result[0].user_id, result[0].email);
+        //  const cookies = require("cookie");
+        //  const cookieOptions = {
+        //    maxAge: 3600000,
+        //    httpOnly: false,
+        //    sameSite: "None",
+        //    secure: false,
+        //  };
+        
+
+        //  res.cookie("yourCookieName", "cookieValue", cookieOptions);
+        res.cookie("testCookie", "TestValue", {
+          maxAge: 3600000,
+          httpOnly: false,
+          sameSite: "lax",
+          path: "/",
+        });
 
         // res.cookie("userId", result[0]?.user_id, {
         //   signed: false,

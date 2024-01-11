@@ -12,7 +12,7 @@ module.exports.postRegistrationdata = async (data) => {
         reject(error);
       } else {
         connection.query(
-          `INSERT INTO user_table( name, email, phone_number,gender,dob, division,institute,study_level,password) VALUES ('${data.name}','${data.email}','${data.phone}','${data.gender}','${data.dob}','${data.division}','${data.institute}','${data.study_level}','${hashedPassword}')`,
+          `INSERT INTO registration( name, email, phone,gender,dob, division,institute,study_level,password) VALUES ('${data.name}','${data.email}','${data.phone}','${data.gender}','${data.dob}','${data.division}','${data.institute}','${data.study_level}','${hashedPassword}')`,
           (queryError, queryResult) => {
             connection.release(); // Release the connection when done with it
 
@@ -40,7 +40,7 @@ module.exports.getRegistrationdata =  () => {
         reject(error);
       } else {
         connection.query(
-          `SELECT * FROM user_table`,
+          `SELECT * FROM registration`,
           (queryError, queryResult) => {
             connection.release(); // Release the connection when done with it
 
@@ -64,7 +64,8 @@ module.exports.postloginCheckdata = (data) => {
         reject(error);
       } else {
         connection.query(
-          `SELECT * FROM user_table where email=?`,[data],
+          `SELECT * FROM registration where email=?`,
+          [data],
           (queryError, queryResult) => {
             connection.release(); // Release the connection when done with it
 

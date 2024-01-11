@@ -9,7 +9,6 @@ app.use(
   cors({
     origin: true,
     credentials: true,
-   
   })
 );
 app.use(express.json());
@@ -23,6 +22,7 @@ app.get('/', (req, res) => {
 app.get('/check', (req, res) => {
     res.send('Running  Server');
 });
+
 
 
 
