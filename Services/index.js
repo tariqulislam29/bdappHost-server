@@ -60,7 +60,7 @@ module.exports.postContentdata = async (data1) => {
     const values = data1
       .map(
         (data) =>
-          `('${data.app_id}', '${data.reg_id}', '${data.date}', '${data.content}')`
+          `('${data.new_id}', '${data.reg_id}', '${data.date}', '${data.content}')`
       )
       .join(",");
 
@@ -153,6 +153,33 @@ module.exports.putUpdatePasswordData = async (id, password) => {
     });
   });
 };
+module.exports.putUpdateContentData = async (data) => {
+ 
+
+  return new Promise(function (resolve, reject) {
+    db.getConnection((error, connection) => {
+      if (error) {
+        console.error("Error getting database connection:", error.message);
+        reject(error);
+      } else {
+        connection.query(
+          `UPDATE new_content SET content = ? WHERE id = ?`,
+          [data.content, data.id],
+          (queryError, queryResult) => {
+            connection.release(); // Release the connection when done with it
+
+            if (queryError) {
+              console.error("Error executing query:", queryError.message);
+              reject(queryError);
+            } else {
+              resolve(queryResult);
+            }
+          }
+        );
+      }
+    });
+  });
+};
 
 // Get Method 
 
@@ -166,6 +193,67 @@ module.exports.getRegistrationdata =  (id) => {
       } else {
         connection.query(
           `SELECT * FROM registration where id =?`,[id],
+          (queryError, queryResult) => {
+            connection.release(); // Release the connection when done with it
+
+            if (queryError) {
+              console.error("Error executing query:", queryError.message);
+              reject(queryError);
+            } else {
+              resolve(queryResult);
+            }
+          }
+        );
+      }
+    });
+  });
+};
+module.exports.getAllContentdata = (reg_id, id, srtdate, eddate) => {
+ 
+  return new Promise(function (resolve, reject) {
+    db.getConnection((error, connection) => {
+      if (error) {
+        console.error("Error getting database connection:", error.message);
+        reject(error);
+      } else {
+        connection.query(
+          `SELECT nc.*, na.app_id, DATE_FORMAT(nc.date, '%d-%m-%Y') AS formatted_date
+   FROM new_content nc
+   JOIN new_app na ON nc.new_id = na.id
+   WHERE nc.date BETWEEN ? AND ?
+   AND nc.reg_id = ?
+   AND nc.new_id = ?`,
+          [srtdate, eddate, reg_id, id],
+          (queryError, queryResult) => {
+            connection.release(); // Release the connection when done with it
+
+            if (queryError) {
+              console.error("Error executing query:", queryError.message);
+              reject(queryError);
+            } else {
+              resolve(queryResult);
+            }
+          }
+        );
+      }
+    });
+  });
+};
+module.exports.getAllAppTodayContentdata = (startDate, endDate, reg_id) => {
+  return new Promise(function (resolve, reject) {
+    db.getConnection((error, connection) => {
+      if (error) {
+        console.error("Error getting database connection:", error.message);
+        reject(error);
+      } else {
+        connection.query(
+          `SELECT nc.*, na.app_id, DATE_FORMAT(nc.date, '%d-%m-%Y') AS formatted_date
+   FROM new_content nc
+   JOIN new_app na ON nc.new_id = na.id
+   WHERE nc.date BETWEEN ? AND ?
+   AND nc.reg_id = ?
+   `,
+          [startDate, endDate, reg_id],
           (queryError, queryResult) => {
             connection.release(); // Release the connection when done with it
 
@@ -242,6 +330,31 @@ module.exports.postloginCheckdata = (data) => {
         connection.query(
           `SELECT * FROM registration where email=?`,
           [data],
+          (queryError, queryResult) => {
+            connection.release(); // Release the connection when done with it
+
+            if (queryError) {
+              console.error("Error executing query:", queryError.message);
+              reject(queryError);
+            } else {
+              resolve(queryResult);
+            }
+          }
+        );
+      }
+    });
+  });
+};
+module.exports.deleteContentData = (id) => {
+  return new Promise(function (resolve, reject) {
+    db.getConnection((error, connection) => {
+      if (error) {
+        console.error("Error getting database connection:", error.message);
+        reject(error);
+      } else {
+        connection.query(
+          `DELETE FROM new_content WHERE id=?`,
+          [id],
           (queryError, queryResult) => {
             connection.release(); // Release the connection when done with it
 

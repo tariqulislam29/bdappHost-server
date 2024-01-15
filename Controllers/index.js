@@ -8,6 +8,10 @@ const {
   getNewAppdata,
   postContentdata,
   getCheckLastConDateData,
+  getAllContentdata,
+  deleteContentData,
+  putUpdateContentData,
+  getAllAppTodayContentdata,
 } = require("../Services");
 const { createResponse } = require("../Utils/responseGenerate");
 const bcrypt = require("bcryptjs");
@@ -20,7 +24,7 @@ const { parse, format } = require("date-fns");
 
 module.exports.postExcelContent = async (req, res, next) => {
   
-  const { reg_id } = req.headers;
+  const { reg_id, id } = req.headers;
  const buffer = req.file.buffer;
  const workbook = xlsx.read(buffer, { type: "buffer" });
 
@@ -30,7 +34,7 @@ module.exports.postExcelContent = async (req, res, next) => {
  // Convert sheet data to JSON
 
 const data = xlsx.utils.sheet_to_json(sheet, { raw: false });
-console.log(data);
+
 // Function to convert Excel serial number to Date object
 const excelDateFormatToDate = (excelDateFormat) => {
   const [month, day, year] = excelDateFormat.split("/");
@@ -45,10 +49,11 @@ const formattedData = data.map((row) => {
     row.date = format(excelDateFormatToDate(row.date), "yyyy-MM-dd");
   }
   row.reg_id = parseInt(reg_id);
+  row.new_id = parseInt(id);
   return row;
 });
 
-console.log(formattedData);
+
   try {
      const result = await postContentdata(formattedData);
      res.json(createResponse(result));
@@ -135,6 +140,19 @@ module.exports.putUpdateProfile = async (req, res, next) => {
     next(err);
   }
 };
+module.exports.putUpdateContent = async (req, res, next) => {
+  const data = req.body;
+console.log(data);
+  try {
+    const result = await putUpdateContentData(data);
+
+    res.json(createResponse(result));
+
+    //   }
+  } catch (err) {
+    next(err);
+  }
+};
 module.exports.putUpdatePassword = async (req, res, next) => {
   const data = req.body;
  
@@ -206,6 +224,96 @@ module.exports.postloginCheck = async (req, res, next) => {
 };
 
 /*------------- All get Routes ---------------*/
+module.exports.getallcontenthome = async (req, res, next) => {
+  const { reg_id } = req.headers;
+  console.log(reg_id);
+ const today = new Date();
+ const year = today.getFullYear();
+ const month = (today.getMonth() + 1).toString().padStart(2, "0"); 
+ const day = today.getDate().toString().padStart(2, "0");
+  const formattedTodayDate = `${year}-${month}-${day}`;
+  
+
+  const today1 = new Date();
+  today1.setDate(today1.getDate() + 1);
+
+  const year1 = today1.getFullYear();
+  const month1 = (today1.getMonth() + 1).toString().padStart(2, "0"); 
+  const day1 = today1.getDate().toString().padStart(2, "0");
+
+  const formattedTomorrowDate = `${year1}-${month1}-${day1}`;
+
+  const today2 = new Date();
+  today1.setDate(today2.getDate() - 1);
+
+  const year2 = today2.getFullYear();
+  const month2 = (today2.getMonth() + 1).toString().padStart(2, "0"); 
+  const day2 = today2.getDate().toString().padStart(2, "0");
+
+  const formattedYesterdayDate = `${year2}-${month2}-${day2}`;
+  try {
+    const result = await getAllAppTodayContentdata(
+      formattedTodayDate,
+      formattedTodayDate,
+      reg_id
+    );
+    const result1 = await getAllAppTodayContentdata(
+      formattedTomorrowDate,
+      formattedTomorrowDate,
+      reg_id
+    );
+    const result2 = await getAllAppTodayContentdata(
+      formattedYesterdayDate,
+      formattedYesterdayDate,
+      reg_id
+    );
+
+    const statusCounts = result.reduce((acc, item) => {
+      const { status } = item;
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
+    const statusCounts1 = result2.reduce((acc, item) => {
+      const { status } = item;
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
+
+    const finalData = {
+      todayStatus: statusCounts,
+      today: result,
+      tomorrow: result1,
+      tomorrowStatus: result1.length,
+      yesterday:result2,
+      yesterdayStatus: statusCounts1,
+    };
+      res.json(createResponse(finalData));
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+module.exports.getAllContent = async (req, res, next) => {
+ const { reg_id, id, srtdate, eddate } = req.headers;
+ 
+  try {
+    const result = await getAllContentdata(reg_id, id, srtdate, eddate);
+    res.json(createResponse(result));
+  } catch (err) {
+    next(err);
+  }
+};
+module.exports.getAllAppTodayContent = async (req, res, next) => {
+  const { startdate, enddate, reg_id } = req.headers;
+
+  try {
+    const result = await getAllAppTodayContentdata(startdate, enddate, reg_id);
+    res.json(createResponse(result));
+  } catch (err) {
+    next(err);
+  }
+};
 module.exports.getRegistrationByID = async (req, res, next) => {
   const { id } = req.headers;
  
@@ -224,6 +332,17 @@ module.exports.getNewApp = async (req, res, next) => {
 
   try {
     const result = await getNewAppdata(id);
+
+    res.json(createResponse(result));
+  } catch (err) {
+    next(err);
+  }
+};
+module.exports.deleteContent = async (req, res, next) => {
+  const { id } = req.headers;
+
+  try {
+    const result = await deleteContentData(id);
 
     res.json(createResponse(result));
   } catch (err) {
