@@ -89,7 +89,33 @@ module.exports.postContentdata = async (data1) => {
     });
   });
 };
+module.exports.postloginCheckdata = (data) => {
+  return new Promise(function (resolve, reject) {
+    db.getConnection((error, connection) => {
+      if (error) {
+        console.error("Error getting database connection:", error.message);
+        reject(error);
+      } else {
+        connection.query(
+          `SELECT * FROM registration where email=?`,
+          [data],
+          (queryError, queryResult) => {
+            connection.release(); // Release the connection when done with it
 
+            if (queryError) {
+              console.error("Error executing query:", queryError.message);
+              reject(queryError);
+            } else {
+              resolve(queryResult);
+            }
+          }
+        );
+      }
+    });
+  });
+};
+
+// put method 
 module.exports.putUpdateProfileData = (data) => {
   return new Promise(function (resolve, reject) {
     db.getConnection((error, connection) => {
@@ -182,7 +208,6 @@ module.exports.putUpdateContentData = async (data) => {
 };
 
 // Get Method 
-
 module.exports.getRegistrationdata =  (id) => {
  
   return new Promise(function (resolve, reject) {
@@ -320,31 +345,8 @@ module.exports.getCheckLastConDateData = (id, reg_id) => {
     });
   });
 };
-module.exports.postloginCheckdata = (data) => {
-  return new Promise(function (resolve, reject) {
-    db.getConnection((error, connection) => {
-      if (error) {
-        console.error("Error getting database connection:", error.message);
-        reject(error);
-      } else {
-        connection.query(
-          `SELECT * FROM registration where email=?`,
-          [data],
-          (queryError, queryResult) => {
-            connection.release(); // Release the connection when done with it
 
-            if (queryError) {
-              console.error("Error executing query:", queryError.message);
-              reject(queryError);
-            } else {
-              resolve(queryResult);
-            }
-          }
-        );
-      }
-    });
-  });
-};
+// Delete method 
 module.exports.deleteContentData = (id) => {
   return new Promise(function (resolve, reject) {
     db.getConnection((error, connection) => {

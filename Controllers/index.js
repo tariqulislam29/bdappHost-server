@@ -20,8 +20,6 @@ const { createTokens } = require("../middlewares/JWT");
 const xlsx = require("xlsx");
 const { parse, format } = require("date-fns");
 /*------------- All Post Routes ---------------*/
-
-
 module.exports.postExcelContent = async (req, res, next) => {
   
   const { reg_id, id } = req.headers;
@@ -78,8 +76,6 @@ module.exports.postRegistration = async (req, res, next) => {
   }
 };
 
-
-
 module.exports.postContent = async (req, res, next) => {
   const data = req.body;
 console.log(data);
@@ -98,9 +94,47 @@ console.log(data);
     next(err);
   }
 };
+module.exports.postloginCheck = async (req, res, next) => {
+  try {
+    const data = req.body;
 
+    if (!data.email && !data.password) {
+      res.json(createResponse(null, "email and password is required", true));
+    } else {
+      const result = await postloginCheckdata(data.email);
 
+      if (result.length <= 0) {
+        res.json(createResponse(null, "User not Registered", true));
+      } else {
+        if (result[0]?.status == 0) {
+          res.json(
+            createResponse(
+              null,
+              "User Deactivated Please contact with admin.",
+              true
+            )
+          );
+        } else {
+          const isMatchedPass = await bcrypt.compare(
+            data?.password,
+            result[0]?.password
+          );
 
+          const token = createTokens(result[0].id, result[0].email);
+
+          const data1 = {
+            token: token,
+            isMatchedPass: isMatchedPass,
+          };
+
+          res.json(createResponse(data1, "Successfully Login", false));
+        }
+      }
+    }
+  } catch (err) {
+    next(err);
+  }
+};
 
 module.exports.postNewApp = async (req, res, next) => {
   const data = req.body;
@@ -127,6 +161,8 @@ module.exports.postNewApp = async (req, res, next) => {
     next(err);
   }
 };
+
+/*------------- All put Routes ---------------*/
 module.exports.putUpdateProfile = async (req, res, next) => {
   const data = req.body;
 
@@ -178,50 +214,7 @@ module.exports.putUpdatePassword = async (req, res, next) => {
     next(err);
   }
 };
-module.exports.postloginCheck = async (req, res, next) => {
- 
-  try {
-    const data = req.body;
-    
-      if (!data.email && !data.password) {
-        res.json(createResponse(null, "email and password is required", true));
-      } else {
 
-        const result = await postloginCheckdata(data.email);
-     
-        if (result.length <= 0) {
-          res.json(createResponse(null,"User not Registered",true));
-       }
-        else {
-          if (result[0]?.status == 0) {
-             res.json(
-               createResponse(null,"User Deactivated Please contact with admin.", true)
-             );
-          }
-          else {
-             const isMatchedPass = await bcrypt.compare(
-               data?.password,
-               result[0]?.password
-            );
-            
-             const token = createTokens(result[0].id, result[0].email);
-
-             const data1 = {
-               token: token,
-               isMatchedPass: isMatchedPass,
-             };
-
-             res.json(createResponse(data1,"Successfully Login", false));
-          }
-          
-        }
-
-
-      }
-  } catch (err) {
-    next(err);
-  }
-};
 
 /*------------- All get Routes ---------------*/
 module.exports.getallcontenthome = async (req, res, next) => {
@@ -338,17 +331,7 @@ module.exports.getNewApp = async (req, res, next) => {
     next(err);
   }
 };
-module.exports.deleteContent = async (req, res, next) => {
-  const { id } = req.headers;
 
-  try {
-    const result = await deleteContentData(id);
-
-    res.json(createResponse(result));
-  } catch (err) {
-    next(err);
-  }
-};
 module.exports.getCheckLastConDate = async (req, res, next) => {
   const { id,reg_id } = req.headers;
 // console.log(id, reg_id);
@@ -358,6 +341,20 @@ module.exports.getCheckLastConDate = async (req, res, next) => {
       parseInt(reg_id)
     );
 //  console.log(result);
+    res.json(createResponse(result));
+  } catch (err) {
+    next(err);
+  }
+};
+
+/*------------- All delete Routes ---------------*/
+
+module.exports.deleteContent = async (req, res, next) => {
+  const { id } = req.headers;
+
+  try {
+    const result = await deleteContentData(id);
+
     res.json(createResponse(result));
   } catch (err) {
     next(err);

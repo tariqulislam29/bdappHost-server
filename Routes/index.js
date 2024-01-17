@@ -22,7 +22,6 @@ const router = require("express").Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 // get routes
-// router.get("/getregistration", getRegistration);
 router.get("/getregistration", getRegistrationByID);
 router.get("/getallcontent", getAllContent);
 router.get("/getallAppTcontent", getAllAppTodayContent);
